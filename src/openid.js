@@ -1,46 +1,40 @@
 const logger = require('./connectors/logger');
 const { NumericDate } = require('./helpers');
 const crypto = require('./crypto');
-const github = require('./linkedin');
+const linkedin = require('./linkedin');
 
 const getJwks = () => ({ keys: [crypto.getPublicKey()] });
 
 const getUserInfo = accessToken =>
   Promise.all([
-    github()
+    linkedin()
       .getUserDetails(accessToken)
       .then(userDetails => {
         logger.debug('Fetched user details: %j', userDetails, {});
-        // Here we map the github user response to the standard claims from
+        // Here we map the linkedin user response to the standard claims from
         // OpenID. The mapping was constructed by following
-        // https://developer.github.com/v3/users/
-        // and http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
+        // https://docs.microsoft.com/en-us/linkedin/shared/integrations/people/profile-api?context=linkedin/consumer/context
+        // and
+        // https://docs.microsoft.com/en-us/linkedin/shared/references/v2/profile/lite-profile
         const claims = {
           sub: `${userDetails.id}`, // OpenID requires a string
-          name: userDetails.name,
-          preferred_username: userDetails.login,
-          profile: userDetails.html_url,
-          picture: userDetails.avatar_url,
-          website: userDetails.blog,
-          updated_at: NumericDate(
-            // OpenID requires the seconds since epoch in UTC
-            new Date(Date.parse(userDetails.updated_at))
-          )
+          name: `${userDetails.firstName.localized} ${userDetails.lastName.localized}`,
         };
         logger.debug('Resolved claims: %j', claims, {});
         return claims;
       }),
-    github()
+    linkedin()
       .getUserEmails(accessToken)
       .then(userEmails => {
         logger.debug('Fetched user emails: %j', userEmails, {});
-        const primaryEmail = userEmails.find(email => email.primary);
+        const primaryEmail = userEmails.elements.find(email => email.primary && (email.type === 'EMAIL'));
         if (primaryEmail === undefined) {
           throw new Error('User did not have a primary email address');
         }
+        const emailAddress = primaryEmail['handle~'].emailAddress;
         const claims = {
-          email: primaryEmail.email,
-          email_verified: primaryEmail.verified
+          email: emailAddress,
+          email_verified: true,
         };
         logger.debug('Resolved claims: %j', claims, {});
         return claims;
@@ -55,23 +49,16 @@ const getUserInfo = accessToken =>
   });
 
 const getAuthorizeUrl = (client_id, scope, state, response_type) =>
-  github().getAuthorizeUrl(client_id, scope, state, response_type);
+  linkedin().getAuthorizeUrl(client_id, scope, state, response_type);
 
 const getTokens = (code, state, host) =>
-  github()
+  linkedin()
     .getToken(code, state)
-    .then(githubToken => {
-      logger.debug('Got token: %s', githubToken, {});
-      // GitHub returns scopes separated by commas
-      // But OAuth wants them to be spaces
-      // https://tools.ietf.org/html/rfc6749#section-5.1
-      // Also, we need to add openid as a scope,
-      // since GitHub will have stripped it
-      const scope = `openid ${githubToken.scope.replace(',', ' ')}`;
-
+    .then(linkedinToken => {
+      logger.debug('Got token: %s', linkedinToken, {});
       // ** JWT ID Token required fields **
       // iss - issuer https url
-      // aud - audience that this token is valid for (GITHUB_CLIENT_ID)
+      // aud - audience that this token is valid for (LINKEDIN_CLIENT_ID)
       // sub - subject identifier - must be unique
       // ** Also required, but provided by jsonwebtoken **
       // exp - expiry time for the id token (seconds since epoch in UTC)
@@ -87,8 +74,7 @@ const getTokens = (code, state, host) =>
 
         const idToken = crypto.makeIdToken(payload, host);
         const tokenResponse = {
-          ...githubToken,
-          scope,
+          ...linkedinToken,
           id_token: idToken
         };
 
@@ -128,15 +114,8 @@ const getConfigFor = host => ({
   claims_supported: [
     'sub',
     'name',
-    'preferred_username',
-    'profile',
-    'picture',
-    'website',
     'email',
     'email_verified',
-    'updated_at',
-    'iss',
-    'aud'
   ]
 });
 

@@ -1,21 +1,23 @@
 const axios = require('axios');
+const qs = require('qs');
 const {
-  GITHUB_CLIENT_ID,
-  GITHUB_CLIENT_SECRET,
+  LINKEDIN_CLIENT_ID,
+  LINKEDIN_CLIENT_SECRET,
   COGNITO_REDIRECT_URI,
-  GITHUB_API_URL,
-  GITHUB_LOGIN_URL
+  LINKEDIN_API_URL,
+  LINKEDIN_LOGIN_URL,
+  LINKEDIN_SCOPE,
 } = require('./config');
 const logger = require('./connectors/logger');
 
 const getApiEndpoints = (
-  apiBaseUrl = GITHUB_API_URL,
-  loginBaseUrl = GITHUB_LOGIN_URL
+  apiBaseUrl = LINKEDIN_API_URL,
+  loginBaseUrl = LINKEDIN_LOGIN_URL
 ) => ({
-  userDetails: `${apiBaseUrl}/user`,
-  userEmails: `${apiBaseUrl}/user/emails`,
-  oauthToken: `${loginBaseUrl}/login/oauth/access_token`,
-  oauthAuthorize: `${loginBaseUrl}/login/oauth/authorize`
+  userDetails: `${apiBaseUrl}/v2/me`,
+  userEmails: `${apiBaseUrl}/v2/clientAwareMemberHandles?q=members&projection=(elements*(primary,type,handle~))`,
+  oauthToken: `${apiBaseUrl}/oauth/v2/accessToken`,
+  oauthAuthorize: `${loginBaseUrl}/oauth/v2/authorization`,
 });
 
 const check = response => {
@@ -23,7 +25,7 @@ const check = response => {
   if (response.data) {
     if (response.data.error) {
       throw new Error(
-        `GitHub API responded with a failure: ${response.data.error}, ${
+        `LinkedIn API responded with a failure: ${response.data.error}, ${
           response.data.error_description
         }`
       );
@@ -32,42 +34,42 @@ const check = response => {
     }
   }
   throw new Error(
-    `GitHub API responded with a failure: ${response.status} (${
+    `LinkedIn API responded with a failure: ${response.status} (${
       response.statusText
     })`
   );
 };
 
-const gitHubGet = (url, accessToken) =>
+const linkedinGet = (url, accessToken) =>
   axios({
     method: 'get',
     url,
     headers: {
-      Accept: 'application/vnd.github.v3+json',
-      Authorization: `token ${accessToken}`
+      Authorization: `Bearer ${accessToken}`
     }
   });
 
 module.exports = (apiBaseUrl, loginBaseUrl) => {
   const urls = getApiEndpoints(apiBaseUrl, loginBaseUrl || apiBaseUrl);
   return {
-    getAuthorizeUrl: (client_id, scope, state, response_type) =>
-      `${urls.oauthAuthorize}?client_id=${client_id}&scope=${encodeURIComponent(
-        scope
-      )}&state=${state}&response_type=${response_type}`,
+    getAuthorizeUrl: (client_id, scope, state, response_type) => {
+      const scopesToSend = scope.split(' ').filter(s => s !== 'openid').join(' ');
+      return `${urls.oauthAuthorize}?client_id=${client_id}&scope=${encodeURIComponent(
+        scopesToSend
+      )}&state=${state}&response_type=${response_type}&redirect_uri=${COGNITO_REDIRECT_URI}`;
+    },
     getUserDetails: accessToken =>
-      gitHubGet(urls.userDetails, accessToken).then(check),
+      linkedinGet(urls.userDetails, accessToken).then(check),
     getUserEmails: accessToken =>
-      gitHubGet(urls.userEmails, accessToken).then(check),
+      linkedinGet(urls.userEmails, accessToken).then(check),
     getToken: (code, state) => {
       const data = {
         // OAuth required fields
         grant_type: 'authorization_code',
         redirect_uri: COGNITO_REDIRECT_URI,
-        client_id: GITHUB_CLIENT_ID,
-        // GitHub Specific
+        client_id: LINKEDIN_CLIENT_ID,
         response_type: 'code',
-        client_secret: GITHUB_CLIENT_SECRET,
+        client_secret: LINKEDIN_CLIENT_SECRET,
         code,
         // State may not be present, so we conditionally include it
         ...(state && { state })
@@ -79,15 +81,22 @@ module.exports = (apiBaseUrl, loginBaseUrl) => {
         data,
         {}
       );
-      return axios({
-        method: 'post',
-        url: urls.oauthToken,
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json'
-        },
-        data
-      }).then(check);
+      return axios.post(
+        urls.oauthToken,
+        qs.stringify(data),
+        {
+          headers: {
+            Accept: 'application/json',
+            // 'Content-Type': 'application/json'
+          },
+        }
+      ).then(check)
+        .then(data => {
+          // Because LinkedIn doesn't return the scopes
+          data.scope = LINKEDIN_SCOPE;
+          data.token_type = 'bearer';
+          return data;
+        })
     }
   };
 };

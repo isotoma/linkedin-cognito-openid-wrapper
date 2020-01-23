@@ -5,6 +5,7 @@ module.exports = {
   LINKEDIN_API_URL: process.env.LINKEDIN_API_URL,
   LINKEDIN_LOGIN_URL: process.env.LINKEDIN_LOGIN_URL,
   PORT: parseInt(process.env.PORT, 10) || undefined,
+  LINKEDIN_SCOPE: process.env.LINKEDIN_SCOPE,
 
   // Splunk logging variables
   SPLUNK_URL: process.env.SPLUNK_URL,

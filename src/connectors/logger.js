@@ -39,7 +39,6 @@ if (SPLUNK_URL) {
     new winston.transports.Console({
       format: winston.format.combine(
         winston.format.splat(),
-        winston.format.colorize({ all: true }),
         winston.format.simple()
       )
     })
