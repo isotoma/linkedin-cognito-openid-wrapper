@@ -16,8 +16,6 @@
     "preinstall": "./scripts/create-key.sh",
     "prebuild-dist": "npm run lint && npm run test",
     "build-dist": "npm run build",
-    "predeploy": "npm run build-dist",
-    "deploy": "./scripts/deploy.sh",
     "coverage": "jest --runInBand --coverage"
   },
   "author": "",
