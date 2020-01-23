@@ -116,7 +116,7 @@ module.exports = {
   // runner: "jest-runner",
 
   // The paths to modules that run some code to configure or set up the testing environment before each test
-  setupFiles: ['./config/setup-pact.js'],
+  // setupFiles: [],
 
   // The path to a module that runs some code to configure or set up the testing framework before each test
   setupFilesAfterEnv: ['./config/setup-test-framework-script.js'],
