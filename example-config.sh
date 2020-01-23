@@ -1,20 +1,9 @@
 #!/bin/bash -eu
 
 # Variables always required
-export GITHUB_CLIENT_ID=# <GitHub OAuth App Client ID>
-export GITHUB_CLIENT_SECRET=# <GitHub OAuth App Client Secret>
+export LINKEDIN_CLIENT_ID=# <Linkedin OAuth App Client ID>
+export LINKEDIN_CLIENT_SECRET=# <Linkedin OAuth App Client Secret>
 export COGNITO_REDIRECT_URI=# https://<Your Cognito Domain>/oauth2/idpresponse
-
-# Variables required if used with GitHub Enterprise
-# GITHUB_API_URL=# https://<GitHub Enterprise Host>/api/v3
-# GITHUB_LOGIN_URL=# https://<GitHub Enterprise Host>
-
-# Variables required if Splunk logger is used
-# SPLUNK_URL=# https://<Splunk HEC>/services/collector/event/1.0
-# SPLUNK_TOKEN=# Splunk HTTP Event Collector token
-# SPLUNK_SOURCE=# Source for all logged events
-# SPLUNK_SOURCETYPE=# Sourcetype for all logged events
-# SPLUNK_INDEX=# Index for all logged events
 
 # Variables required if deploying with API Gateway / Lambda
 export BUCKET_NAME=# An S3 bucket name to use as the deployment pipeline

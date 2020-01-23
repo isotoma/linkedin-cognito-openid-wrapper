@@ -1,7 +1,7 @@
 const logger = require('./connectors/logger');
 const { NumericDate } = require('./helpers');
 const crypto = require('./crypto');
-const github = require('./github');
+const github = require('./linkedin');
 
 const getJwks = () => ({ keys: [crypto.getPublicKey()] });
 
