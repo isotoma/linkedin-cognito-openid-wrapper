@@ -5,7 +5,7 @@
   "main": "dist-web/server.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/TimothyJones/github-cognito-openid-wrapper.git"
+    "url": "https://github.com/isotoma/linkedin-cognito-openid-wrapper.git"
   },
   "scripts": {
     "build": "webpack",
