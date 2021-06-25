@@ -1,4 +1,5 @@
 const axios = require('axios');
+const { query } = require('express');
 const qs = require('qs');
 const {
   LINKEDIN_CLIENT_ID,
@@ -46,6 +47,9 @@ const linkedinGet = (url, accessToken) =>
     url,
     headers: {
       Authorization: `Bearer ${accessToken}`
+    },
+    query: {
+      projection: '(id,localizedLastName,localizedFirstName,profilePicture(displayImage~:playableStreams))'
     }
   });
 
