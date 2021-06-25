@@ -18,7 +18,10 @@ const getUserInfo = accessToken =>
         // https://docs.microsoft.com/en-us/linkedin/shared/references/v2/profile/lite-profile
         const claims = {
           sub: `${userDetails.id}`, // OpenID requires a string
-          name: `${userDetails.firstName.localized} ${userDetails.lastName.localized}`,
+          firstName: `${userDetails.localizedFirstName}`,
+          lastName: `${userDetails.localizedLastName}`,
+          picture: `${userDetails.profilePicture}`
+
         };
         logger.debug('Resolved claims: %j', claims, {});
         return claims;
@@ -113,7 +116,9 @@ const getConfigFor = host => ({
   display_values_supported: ['page', 'popup'],
   claims_supported: [
     'sub',
-    'name',
+    'firstName',
+    'lastName',
+    'picture',
     'email',
     'email_verified',
   ]
