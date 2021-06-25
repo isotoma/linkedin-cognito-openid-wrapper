@@ -20,7 +20,7 @@ const getUserInfo = accessToken =>
           sub: `${userDetails.id}`, // OpenID requires a string
           firstName: `${userDetails.localizedFirstName}`,
           lastName: `${userDetails.localizedLastName}`,
-          picture: `${userDetails.profilePicture}`
+          picture: `${userDetails.profilePicture?.displayImage}`
 
         };
         logger.debug('Resolved claims: %j', claims, {});
