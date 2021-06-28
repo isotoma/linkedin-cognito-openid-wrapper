@@ -44,13 +44,10 @@ const check = response => {
 const linkedinGet = (url, accessToken) =>
   axios({
     method: 'get',
-    url,
+    url: url + '?projection=(id,localizedLastName,localizedFirstName,profilePicture(displayImage~:playableStreams))',
     headers: {
       Authorization: `Bearer ${accessToken}`
     },
-    query: {
-      projection: '(id,localizedLastName,localizedFirstName,profilePicture(displayImage~:playableStreams))'
-    }
   });
 
 module.exports = (apiBaseUrl, loginBaseUrl) => {

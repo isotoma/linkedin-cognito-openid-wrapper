@@ -8,7 +8,7 @@ const {
 } = require('../config');
 
 const logger = winston.createLogger({
-  level: 'info'
+  level: 'debug'
 });
 
 // Activate Splunk logging if Splunk's env variables are set

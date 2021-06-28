@@ -16,11 +16,14 @@ const getUserInfo = accessToken =>
         // https://docs.microsoft.com/en-us/linkedin/shared/integrations/people/profile-api?context=linkedin/consumer/context
         // and
         // https://docs.microsoft.com/en-us/linkedin/shared/references/v2/profile/lite-profile
+        const picture = userDetails.profilePicture["displayImage~"]?.elements[1]?.identifiers[0]?.identifier
         const claims = {
           sub: `${userDetails.id}`, // OpenID requires a string
           firstName: `${userDetails.localizedFirstName}`,
           lastName: `${userDetails.localizedLastName}`,
-          picture: `${userDetails.profilePicture?.['displayImage~']?.elements[0]?.identifiers[0]?.identifier}`
+          picture: picture,
+
+          // ?.['displayImage~']?.elements[0]?.identifiers[0]?.identifier
 
         };
         logger.debug('Resolved claims: %j', claims, {});
