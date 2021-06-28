@@ -1,5 +1,4 @@
 const axios = require('axios');
-const { query } = require('express');
 const qs = require('qs');
 const {
   LINKEDIN_CLIENT_ID,
@@ -56,7 +55,7 @@ const linkedinGetUserDetails = (url, accessToken) =>
     url,
     headers: {
       Authorization: `Bearer ${accessToken}`
-    },
+    }
   });
 
 module.exports = (apiBaseUrl, loginBaseUrl) => {

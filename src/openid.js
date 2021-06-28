@@ -22,9 +22,6 @@ const getUserInfo = accessToken =>
           firstName: `${userDetails.localizedFirstName}`,
           lastName: `${userDetails.localizedLastName}`,
           picture: picture,
-
-          // ?.['displayImage~']?.elements[0]?.identifiers[0]?.identifier
-
         };
         logger.debug('Resolved claims: %j', claims, {});
         return claims;
