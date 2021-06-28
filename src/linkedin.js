@@ -41,16 +41,22 @@ const check = response => {
   );
 };
 
-const linkedinGet = (url, accessToken) =>
+const linkedinGetUserDetails = (url, accessToken) =>
+  axios({
+    method: 'get',
+    url: url + '?projection=(id,localizedLastName,localizedFirstName,profilePicture(displayImage~:playableStreams))',
+    headers: {
+      Authorization: `Bearer ${accessToken}`
+    },
+  });
+
+  const linkedinGet = (url, accessToken) =>
   axios({
     method: 'get',
     url,
     headers: {
       Authorization: `Bearer ${accessToken}`
     },
-    query: {
-      projection: '(id,localizedLastName,localizedFirstName,profilePicture(displayImage~:playableStreams))'
-    }
   });
 
 module.exports = (apiBaseUrl, loginBaseUrl) => {
@@ -63,7 +69,7 @@ module.exports = (apiBaseUrl, loginBaseUrl) => {
       )}&state=${state}&response_type=${response_type}&redirect_uri=${COGNITO_REDIRECT_URI}`;
     },
     getUserDetails: accessToken =>
-      linkedinGet(urls.userDetails, accessToken).then(check),
+      linkedinGetUserDetails(urls.userDetails, accessToken).then(check),
     getUserEmails: accessToken =>
       linkedinGet(urls.userEmails, accessToken).then(check),
     getToken: (code, state) => {
