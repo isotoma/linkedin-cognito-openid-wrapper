@@ -14,7 +14,7 @@ const getApiEndpoints = (
   apiBaseUrl = LINKEDIN_API_URL,
   loginBaseUrl = LINKEDIN_LOGIN_URL
 ) => ({
-  userDetails: `${apiBaseUrl}/v2/me`,
+  userDetails: `${apiBaseUrl}/v2/me?projection=(id,localizedLastName,localizedFirstName,profilePicture(displayImage~:playableStreams))`,
   userEmails: `${apiBaseUrl}/v2/clientAwareMemberHandles?q=members&projection=(elements*(primary,type,handle~))`,
   oauthToken: `${apiBaseUrl}/oauth/v2/accessToken`,
   oauthAuthorize: `${loginBaseUrl}/oauth/v2/authorization`,
@@ -40,15 +40,6 @@ const check = response => {
   );
 };
 
-const linkedinGetUserDetails = (url, accessToken) =>
-  axios({
-    method: 'get',
-    url: url + '?projection=(id,localizedLastName,localizedFirstName,profilePicture(displayImage~:playableStreams))',
-    headers: {
-      Authorization: `Bearer ${accessToken}`
-    },
-  });
-
   const linkedinGet = (url, accessToken) =>
   axios({
     method: 'get',
@@ -68,7 +59,7 @@ module.exports = (apiBaseUrl, loginBaseUrl) => {
       )}&state=${state}&response_type=${response_type}&redirect_uri=${COGNITO_REDIRECT_URI}`;
     },
     getUserDetails: accessToken =>
-      linkedinGetUserDetails(urls.userDetails, accessToken).then(check),
+    linkedinGet(urls.userDetails, accessToken).then(check),
     getUserEmails: accessToken =>
       linkedinGet(urls.userEmails, accessToken).then(check),
     getToken: (code, state) => {
